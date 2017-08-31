@@ -27,6 +27,7 @@ import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -70,11 +71,23 @@ public class MetadataDisplayFilter extends GenericFilterBean {
      * Url this filter should get activated on.
      */
     protected String filterProcessesUrl = FILTER_URL;
+    
+    /**
+     * An explicit filename for the generated metadata XML. This 
+     * property is optional.
+     */
+    protected String metadataFilename;
 
     /**
      * Default name of path suffix which will invoke this filter.
      */
     public static final String FILTER_URL = "/saml/metadata";
+    
+    /**
+     * The default filename for the generated metadata XML if metadataFilename 
+     * is not provided.
+     */
+    public static final String DEFAULT_FILENAME = "spring_saml_metadata";
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
@@ -114,7 +127,8 @@ public class MetadataDisplayFilter extends GenericFilterBean {
             SAMLMessageContext context = contextProvider.getLocalEntity(request, response);
             String entityId = context.getLocalEntityId();
             response.setContentType("application/samlmetadata+xml"); // SAML_Meta, 4.1.1 - line 1235
-            response.addHeader("Content-Disposition", "attachment; filename=\"spring_saml_metadata.xml\"");
+            String filename = StringUtils.hasText(metadataFilename) ? metadataFilename : DEFAULT_FILENAME;
+            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + ".xml\"");
             displayMetadata(entityId, response.getWriter());
         } catch (MetadataProviderException e) {
             throw new ServletException("Error initializing metadata", e);
