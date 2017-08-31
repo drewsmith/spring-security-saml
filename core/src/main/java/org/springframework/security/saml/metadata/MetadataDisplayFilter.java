@@ -127,8 +127,7 @@ public class MetadataDisplayFilter extends GenericFilterBean {
             SAMLMessageContext context = contextProvider.getLocalEntity(request, response);
             String entityId = context.getLocalEntityId();
             response.setContentType("application/samlmetadata+xml"); // SAML_Meta, 4.1.1 - line 1235
-            String filename = StringUtils.hasText(metadataFilename) ? metadataFilename : DEFAULT_FILENAME;
-            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + ".xml\"");
+            response.addHeader("Content-Disposition", "attachment; filename=\"" + metadataFilename + ".xml\"");
             displayMetadata(entityId, response.getWriter());
         } catch (MetadataProviderException e) {
             throw new ServletException("Error initializing metadata", e);
@@ -203,6 +202,10 @@ public class MetadataDisplayFilter extends GenericFilterBean {
         Assert.notNull(manager, "MetadataManager must be set");
         Assert.notNull(keyManager, "KeyManager must be set");
         Assert.notNull(contextProvider, "Context provider must be set");
+        
+        if(!StringUtils.hasText(metadataFilename)) {
+            metadataFilename = DEFAULT_FILENAME;
+        }
     }
 
 }
